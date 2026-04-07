@@ -4,59 +4,156 @@
   <meta charset="UTF-8">
   <title>Open App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #f5f5f7;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 40px 30px;
+      max-width: 340px;
+      width: 100%;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      font-size: 22px;
+      color: #1d1d1f;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #6e6e73;
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      text-decoration: none;
+      margin-bottom: 12px;
+    }
+
+    .btn-primary {
+      background: #007aff;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #f0f0f5;
+      color: #1d1d1f;
+      font-size: 14px;
+      padding: 12px;
+    }
+
+    /* State: trying to open */
+    #stateOpening  { display: none; }
+    #stateFallback { display: none; }
+    #stateDefault  { display: block; }
+  </style>
 </head>
 <body>
+<div class="card">
+
+  <!-- STATE 1: Default — ask user to open -->
+  <div id="stateDefault">
+    <h2>Square Enix Portal</h2>
+    <p class="subtitle">Tap below to open the app on your device.</p>
+    <button class="btn btn-primary" onclick="tryOpenApp()">
+      Open App
+    </button>
+  </div>
+
+  <!-- STATE 2: Trying to open — waiting for user action on popup -->
+  <div id="stateOpening">
+    <h2>Opening App...</h2>
+    <p class="subtitle">
+      A popup appeared asking permission.<br>
+      Please tap <strong>"Allow"</strong> or <strong>"Open"</strong> to continue.
+    </p>
+    <button class="btn btn-secondary" onclick="showFallback()">
+      App didn't open? Tap here
+    </button>
+  </div>
+
+  <!-- STATE 3: Fallback — go to App Store -->
+  <div id="stateFallback">
+    <h2>App Not Found</h2>
+    <p class="subtitle">
+      The app doesn't seem to be installed.<br>
+      Get it from the App Store.
+    </p>
+    <a href="https://apps.apple.com/app/id6761522671"
+       class="btn btn-primary">
+      Download on App Store
+    </a>
+    <button class="btn btn-secondary" onclick="tryOpenApp()">
+      Try Again
+    </button>
+  </div>
+
+</div>
 
 <script>
   const appUrl      = "com.innovaturelabs.squarenixInnov://qr/123";
   const appStoreUrl = "https://apps.apple.com/app/id6761522671";
 
-  let fallbackTimer = null;
-  let timerStarted  = false;
-
-  function startFallbackTimer() {
-    if (timerStarted) return;
-    timerStarted = true;
-
-    fallbackTimer = setTimeout(function () {
-      window.location.href = appStoreUrl;
-    }, 1500);
+  function showState(name) {
+    document.getElementById("stateDefault").style.display  = "none";
+    document.getElementById("stateOpening").style.display  = "none";
+    document.getElementById("stateFallback").style.display = "none";
+    document.getElementById("state" + name).style.display  = "block";
   }
 
-  function cancelFallback() {
-    clearTimeout(fallbackTimer);
-    fallbackTimer = null;
-  }
+  function tryOpenApp() {
 
-  window.location.href = appUrl;
+    // Try to open the app via URL scheme
+    window.location.href = appUrl;
 
-  window.addEventListener("blur", function onBlur() {
-    cancelFallback();
-    window.removeEventListener("blur", onBlur);
-  });
+    // Show "waiting for popup" state immediately
+    // This message tells user what to do if popup appears
+    showState("Opening");
 
-  document.addEventListener("visibilitychange", function handler() {
-    if (document.hidden) {
-      cancelFallback();
-      document.removeEventListener("visibilitychange", handler);
-    }
-  });
-
-  window.addEventListener("focus", function onFocus() {
-    setTimeout(function () {
-      if (!document.hidden) {
-        window.location.href = appStoreUrl;
+    // Detect if app actually opened (page goes hidden)
+    document.addEventListener("visibilitychange", function handler() {
+      if (document.hidden) {
+        // App opened successfully — clean up
+        document.removeEventListener("visibilitychange", handler);
       }
-    }, 500);
-    window.removeEventListener("focus", onFocus);
+    });
+
+    // NO automatic timer to App Store
+    // User manually taps "App didn't open?" if needed
+  }
+
+  function showFallback() {
+    showState("Fallback");
+  }
+
+  // Auto-trigger on page load
+  window.addEventListener("load", function () {
+    tryOpenApp();
   });
-
-  setTimeout(function () {
-    if (!document.hidden) {
-      startFallbackTimer();
-    }
-  }, 3000);
-
 </script>
 
 </body>
