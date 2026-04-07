@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Open App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<script>
+  const appUrl      = "com.innovaturelabs.squarenixInnov://qr/123";
+  const appStoreUrl = "https://apps.apple.com/app/id6761522671";
+
+  let fallbackTimer = null;
+  let timerStarted  = false;
+
+  function startFallbackTimer() {
+    if (timerStarted) return;
+    timerStarted = true;
+
+    fallbackTimer = setTimeout(function () {
+      window.location.href = appStoreUrl;
+    }, 1500);
+  }
+
+  function cancelFallback() {
+    clearTimeout(fallbackTimer);
+    fallbackTimer = null;
+  }
+
+  window.location.href = appUrl;
+
+  window.addEventListener("blur", function onBlur() {
+    cancelFallback();
+    window.removeEventListener("blur", onBlur);
+  });
+
+  document.addEventListener("visibilitychange", function handler() {
+    if (document.hidden) {
+      cancelFallback();
+      document.removeEventListener("visibilitychange", handler);
+    }
+  });
+
+  window.addEventListener("focus", function onFocus() {
+    setTimeout(function () {
+      if (!document.hidden) {
+        window.location.href = appStoreUrl;
+      }
+    }, 500);
+    window.removeEventListener("focus", onFocus);
+  });
+
+  setTimeout(function () {
+    if (!document.hidden) {
+      startFallbackTimer();
+    }
+  }, 3000);
+
+</script>
+
+</body>
+</html>
