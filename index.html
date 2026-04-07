@@ -54,19 +54,9 @@
       margin-bottom: 12px;
     }
 
-    .btn-primary {
-      background: #007aff;
-      color: white;
-    }
+    .btn-primary   { background: #007aff; color: white; }
+    .btn-secondary { background: #f0f0f5; color: #1d1d1f; font-size: 14px; padding: 12px; }
 
-    .btn-secondary {
-      background: #f0f0f5;
-      color: #1d1d1f;
-      font-size: 14px;
-      padding: 12px;
-    }
-
-    /* State: trying to open */
     #stateOpening  { display: none; }
     #stateFallback { display: none; }
     #stateDefault  { display: block; }
@@ -75,7 +65,7 @@
 <body>
 <div class="card">
 
-  <!-- STATE 1: Default — ask user to open -->
+  <!-- STATE 1: Default -->
   <div id="stateDefault">
     <h2>Square Enix Portal</h2>
     <p class="subtitle">Tap below to open the app on your device.</p>
@@ -84,21 +74,21 @@
     </button>
   </div>
 
-  <!-- STATE 2: Trying to open — waiting for user action on popup -->
+  <!-- STATE 2: Trying to open -->
   <div id="stateOpening">
     <h2>Opening App...</h2>
     <p class="subtitle">
-      A popup appeared asking permission.<br>
-      Please tap <strong>"Allow"</strong> or <strong>"Open"</strong> to continue.
+      If a popup appears, please tap <strong>"Allow"</strong> or
+      <strong>"Open"</strong> to continue.
     </p>
-    <button class="btn btn-secondary" onclick="showFallback()">
+    <button class="btn btn-secondary" onclick="goToStore()">
       App didn't open? Tap here
     </button>
   </div>
 
-  <!-- STATE 3: Fallback — go to App Store -->
+  <!-- STATE 3: Fallback -->
   <div id="stateFallback">
-    <h2>App Not Found</h2>
+    <h2>App Not Installed</h2>
     <p class="subtitle">
       The app doesn't seem to be installed.<br>
       Get it from the App Store.
@@ -118,6 +108,9 @@
   const appUrl      = "com.innovaturelabs.squarenixInnov://qr/123";
   const appStoreUrl = "https://apps.apple.com/app/id6761522671";
 
+  let fallbackTimer = null;
+  let appOpened     = false;
+
   function showState(name) {
     document.getElementById("stateDefault").style.display  = "none";
     document.getElementById("stateOpening").style.display  = "none";
@@ -125,32 +118,64 @@
     document.getElementById("state" + name).style.display  = "block";
   }
 
-  function tryOpenApp() {
+  function goToStore() {
+    clearTimeout(fallbackTimer);
+    window.location.href = appStoreUrl;
+  }
 
-    // Try to open the app via URL scheme
+  function tryOpenApp() {
+    appOpened = false;
+    clearTimeout(fallbackTimer);
+
+    // Try opening the app
     window.location.href = appUrl;
 
-    // Show "waiting for popup" state immediately
-    // This message tells user what to do if popup appears
+    // Show "opening" state
     showState("Opening");
 
-    // Detect if app actually opened (page goes hidden)
+    // Detect if app opened — page goes hidden
     document.addEventListener("visibilitychange", function handler() {
       if (document.hidden) {
-        // App opened successfully — clean up
+        // App opened successfully
+        appOpened = true;
+        clearTimeout(fallbackTimer);
         document.removeEventListener("visibilitychange", handler);
       }
     });
 
-    // NO automatic timer to App Store
-    // User manually taps "App didn't open?" if needed
+    // ── KEY FIX ──
+    // If app is not installed, URL scheme silently fails.
+    // Page stays visible. After 2.5s with no visibilitychange
+    // → app is not installed → go to App Store automatically.
+    fallbackTimer = setTimeout(function () {
+      if (!appOpened && !document.hidden) {
+        goToStore();
+      }
+    }, 2500);
+
+    // ── POPUP HANDLING ──
+    // If iOS permission popup appears, window loses focus (blur).
+    // Pause the timer so it doesn't fire while popup is open.
+    window.addEventListener("blur", function onBlur() {
+      clearTimeout(fallbackTimer); // pause timer during popup
+      window.removeEventListener("blur", onBlur);
+
+      // When focus comes back (user dismissed popup)
+      window.addEventListener("focus", function onFocus() {
+        window.removeEventListener("focus", onFocus);
+
+        // Small delay to let visibilitychange fire first if app opened
+        setTimeout(function () {
+          if (!appOpened && !document.hidden) {
+            // User dismissed popup without allowing OR app not installed
+            goToStore();
+          }
+        }, 500);
+      });
+    });
   }
 
-  function showFallback() {
-    showState("Fallback");
-  }
-
-  // Auto-trigger on page load
+  // Auto trigger on page load
   window.addEventListener("load", function () {
     tryOpenApp();
   });
