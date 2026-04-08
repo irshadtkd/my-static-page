@@ -1,33 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Open App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <title>Opening Portal App...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding-top: 80px; }
+    .btn { display: inline-block; margin: 15px; padding: 12px 20px;
+           font-size: 16px; text-decoration: none; border-radius: 8px; }
+    .open-btn { background-color: #007aff; color: white; }
+    .store-btn { background-color: #333; color: white; }
+  </style>
 </head>
 <body>
+  <h2>Open Square Enix Portal App</h2>
 
-<h2>Open App</h2>
+  <!--
+    This IS your Universal Link.
+    iOS intercepts this automatically if app is installed.
+    If NOT installed, it just opens the webpage (then JS redirects to store).
+  -->
+  <a href="com.innovaturelabs.squarenixInnov://qr/123"
+     class="btn open-btn">
+    Open App
+  </a>
+  <br/>
+  <a href="https://apps.apple.com/app/id6761522671"
+     class="btn store-btn">
+    Download from App Store
+  </a>
 
-<a href="com.innovaturelabs.squarenixInnov://qr/123" id="openLink">
-  <button>Open in App</button>
-</a>
+  <p>If the app doesn't open automatically, tap "Open App".</p>
 
-<script>
-  const appUrl = "com.innovaturelabs.squarenixInnov://qr/123";
-  const appStoreUrl = "https://apps.apple.com/app/id6761522671"; // replace
+  <script>
+    // Fix your App Store URL — it needs the numeric app ID
+    // Format: https://apps.apple.com/app/id[NUMBER]
+    const storeURL = "https://apps.apple.com/app/id6761522671";
 
-  document.getElementById("openLink").addEventListener("click", function () {
-    const start = Date.now();
+    // Only redirect to store if the page actually loads
+    // (meaning app was NOT installed — Universal Link didn't trigger)
+    let appOpened = false;
 
-    setTimeout(function () {
-      // If app didn’t open, redirect to App Store
-      if (Date.now() - start < 2000) {
-        window.location.href = appStoreUrl;
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) appOpened = true; // App opened!
+    });
+
+    setTimeout(() => {
+      if (!appOpened) {
+        window.location.href = storeURL;
       }
-    }, 3000);
-  });
-</script>
-
+    }, 2500);
+  </script>
 </body>
 </html>
