@@ -1,56 +1,19 @@
 <!DOCTYPE html>
-<html lang="ja">
-
+<html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
-  <title>�X�N�E�F�A�E�G�j�b�N�X �A�v�� �_�E�����[�h</title>
-
-  <style type="text/css">
-    .app-download {
-      text-align: center;
-      font-family: Arial, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-    }
-
-    .app-download h2 {
-      font-size: 18px;
-      margin-bottom: 20px;
-      line-height: 1.6;
-    }
-
-    .store-links a {
-      display: inline-block;
-      margin: 0 10px;
-    }
-
-    .store-links img {
-      height: 60px;
-      width: auto;
-      border: none;
-    }
-  </style>
+  <title>Opening App...</title>
+  <meta name="apple-itunes-app" content="app-id=6761522671">
 </head>
-
 <body>
-  <div class="app-download">
-    <h2>
-      �摜
-    </h2>
-    <h2>
-      ����̓X�N�E�F�A�E�G�j�b�N�X �A�v��������s���܂��B<br>
-      �u�X�N�E�F�A�E�G�j�b�N�X �A�v���v�_�E�����[�h
-    </h2>
+  <p>Redirecting to the App Store...</p>
 
-    <div class="store-links">
-      <a href="https://irshadtkd.github.io/qr/123" target="_blank" rel="noopener">
-        <img src="https://www.jp.square-enix.com/members/mailnews/template/badg_app2.png">
-      </a>
+  <script>
+    // Your App Store URL
+    const APP_STORE_URL = "https://apps.apple.com/app/id6761522671";
 
-      <a href="https://play.google.com/store/apps/details?id=com.square_enix.android_googleplay.PortalAppjp"
-        target="_blank" rel="noopener">
-        <img src="https://www.jp.square-enix.com/members/mailnews/template/badg_google3.png">
-      </a>
-    </div>
-  </div>
+    // Redirect to App Store immediately
+    // (Universal Links will have intercepted this if app was installed)
+    window.location.href = APP_STORE_URL;
+  </script>
 </body>
-
 </html>
