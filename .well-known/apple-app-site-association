@@ -1,15 +1,9 @@
 {
   "applinks": {
-    "apps": [],
     "details": [
       {
-        "appIDs": ["2633M77RVP.com.sqaureEnix.portalAppIos"],
-        "components": [
-          {
-            "/": "/qr/*",
-            "comment": "Matches all QR deep link paths"
-          }
-        ]
+        "appID": "TEAMID.com.innovaturelabs.squarenixInnov",
+        "paths": [ "/qr/*" ]
       }
     ]
   }
