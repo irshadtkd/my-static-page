@@ -4,180 +4,28 @@
   <meta charset="UTF-8">
   <title>Open App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background: #f5f5f7;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .card {
-      background: white;
-      border-radius: 20px;
-      padding: 40px 30px;
-      max-width: 340px;
-      width: 100%;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-    }
-
-    h2 {
-      font-size: 22px;
-      color: #1d1d1f;
-      margin-bottom: 8px;
-    }
-
-    .subtitle {
-      font-size: 14px;
-      color: #6e6e73;
-      margin-bottom: 32px;
-      line-height: 1.5;
-    }
-
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 15px;
-      font-size: 16px;
-      font-weight: 600;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      text-decoration: none;
-      margin-bottom: 12px;
-    }
-
-    .btn-primary   { background: #007aff; color: white; }
-    .btn-secondary { background: #f0f0f5; color: #1d1d1f; font-size: 14px; padding: 12px; }
-
-    #stateOpening  { display: none; }
-    #stateFallback { display: none; }
-    #stateDefault  { display: block; }
-  </style>
 </head>
 <body>
-<div class="card">
 
-  <!-- STATE 1: Default -->
-  <div id="stateDefault">
-    <h2>Square Enix Portal</h2>
-    <p class="subtitle">Tap below to open the app on your device.</p>
-    <button class="btn btn-primary" onclick="tryOpenApp()">
-      Open App
-    </button>
-  </div>
+<h2>Open App</h2>
 
-  <!-- STATE 2: Trying to open -->
-  <div id="stateOpening">
-    <h2>Opening App...</h2>
-    <p class="subtitle">
-      If a popup appears, please tap <strong>"Allow"</strong> or
-      <strong>"Open"</strong> to continue.
-    </p>
-    <button class="btn btn-secondary" onclick="goToStore()">
-      App didn't open? Tap here
-    </button>
-  </div>
-
-  <!-- STATE 3: Fallback -->
-  <div id="stateFallback">
-    <h2>App Not Installed</h2>
-    <p class="subtitle">
-      The app doesn't seem to be installed.<br>
-      Get it from the App Store.
-    </p>
-    <a href="https://apps.apple.com/app/id6761522671"
-       class="btn btn-primary">
-      Download on App Store
-    </a>
-    <button class="btn btn-secondary" onclick="tryOpenApp()">
-      Try Again
-    </button>
-  </div>
-
-</div>
+<a href="com.innovaturelabs.squarenixInnov://qr/123" id="openLink">
+  <button>Open in App</button>
+</a>
 
 <script>
-  const appUrl      = "com.innovaturelabs.squarenixInnov://qr/123";
-  const appStoreUrl = "https://apps.apple.com/app/id6761522671";
+  const appUrl = "com.innovaturelabs.squarenixInnov://qr/123";
+  const appStoreUrl = "https://apps.apple.com/app/id6761522671"; // replace
 
-  let fallbackTimer = null;
-  let appOpened     = false;
+  document.getElementById("openLink").addEventListener("click", function () {
+    const start = Date.now();
 
-  function showState(name) {
-    document.getElementById("stateDefault").style.display  = "none";
-    document.getElementById("stateOpening").style.display  = "none";
-    document.getElementById("stateFallback").style.display = "none";
-    document.getElementById("state" + name).style.display  = "block";
-  }
-
-  function goToStore() {
-    clearTimeout(fallbackTimer);
-    window.location.href = appStoreUrl;
-  }
-
-  function tryOpenApp() {
-    appOpened = false;
-    clearTimeout(fallbackTimer);
-
-    // Try opening the app
-    window.location.href = appUrl;
-
-    // Show "opening" state
-    showState("Opening");
-
-    // Detect if app opened — page goes hidden
-    document.addEventListener("visibilitychange", function handler() {
-      if (document.hidden) {
-        // App opened successfully
-        appOpened = true;
-        clearTimeout(fallbackTimer);
-        document.removeEventListener("visibilitychange", handler);
+    setTimeout(function () {
+      // If app didn’t open, redirect to App Store
+      if (Date.now() - start < 2000) {
+        window.location.href = appStoreUrl;
       }
-    });
-
-    // ── KEY FIX ──
-    // If app is not installed, URL scheme silently fails.
-    // Page stays visible. After 2.5s with no visibilitychange
-    // → app is not installed → go to App Store automatically.
-    fallbackTimer = setTimeout(function () {
-      if (!appOpened && !document.hidden) {
-        goToStore();
-      }
-    }, 2500);
-
-    // ── POPUP HANDLING ──
-    // If iOS permission popup appears, window loses focus (blur).
-    // Pause the timer so it doesn't fire while popup is open.
-    window.addEventListener("blur", function onBlur() {
-      clearTimeout(fallbackTimer); // pause timer during popup
-      window.removeEventListener("blur", onBlur);
-
-      // When focus comes back (user dismissed popup)
-      window.addEventListener("focus", function onFocus() {
-        window.removeEventListener("focus", onFocus);
-
-        // Small delay to let visibilitychange fire first if app opened
-        setTimeout(function () {
-          if (!appOpened && !document.hidden) {
-            // User dismissed popup without allowing OR app not installed
-            goToStore();
-          }
-        }, 500);
-      });
-    });
-  }
-
-  // Auto trigger on page load
-  window.addEventListener("load", function () {
-    tryOpenApp();
+    }, 1500);
   });
 </script>
 
